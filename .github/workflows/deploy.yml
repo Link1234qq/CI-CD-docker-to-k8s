@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.env }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Deploy to Kubernetes
         uses: ./.github/actions/deploy-k8s
         with:

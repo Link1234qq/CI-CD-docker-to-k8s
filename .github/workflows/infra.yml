@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.env }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Provision infra
         uses: ./.github/actions/provision-infra
         with:
