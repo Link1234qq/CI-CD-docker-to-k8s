@@ -1,0 +1,79 @@
+# Main CI/CD pipeline — uses reusable workflows and shared actions (best practice)
+name: CI CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+  pull_request:
+
+jobs:
+  # --- CI: always run (build + test) ---
+  call_ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  # --- CD: only on main — Docker build then infra + deploy per env ---
+  call_docker_build:
+    name: Docker build
+    uses: ./.github/workflows/docker-build.yml
+    needs: [call_ci]
+    if: github.ref == 'refs/heads/main' && success()
+    secrets: inherit
+
+  # Infra + deploy per environment (can run in parallel per env)
+  call_infra_dev:
+    name: Infra dev
+    uses: ./.github/workflows/infra.yml
+    needs: [call_docker_build]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: dev
+    secrets: inherit
+
+  call_infra_stage:
+    name: Infra stage
+    uses: ./.github/workflows/infra.yml
+    needs: [call_docker_build]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: stage
+    secrets: inherit
+
+  call_infra_prod:
+    name: Infra prod
+    uses: ./.github/workflows/infra.yml
+    needs: [call_docker_build]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: prod
+    secrets: inherit
+
+  call_deploy_dev:
+    name: Deploy dev
+    uses: ./.github/workflows/deploy.yml
+    needs: [call_infra_dev]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: dev
+    secrets: inherit
+
+  call_deploy_stage:
+    name: Deploy stage
+    uses: ./.github/workflows/deploy.yml
+    needs: [call_infra_stage]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: stage
+    secrets: inherit
+
+  call_deploy_prod:
+    name: Deploy prod
+    uses: ./.github/workflows/deploy.yml
+    needs: [call_infra_prod]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: prod
+    secrets: inherit
