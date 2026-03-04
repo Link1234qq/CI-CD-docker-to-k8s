@@ -23,7 +23,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && success()
     secrets: inherit
 
-  # Infra + deploy per environment (can run in parallel per env)
+  # --- CD: sequential promotion — dev → stage → prod (each env only after previous succeeded) ---
   call_infra_dev:
     name: Infra dev
     uses: ./.github/workflows/infra.yml
@@ -31,24 +31,6 @@ jobs:
     if: github.ref == 'refs/heads/main' && success()
     with:
       env: dev
-    secrets: inherit
-
-  call_infra_stage:
-    name: Infra stage
-    uses: ./.github/workflows/infra.yml
-    needs: [call_docker_build]
-    if: github.ref == 'refs/heads/main' && success()
-    with:
-      env: stage
-    secrets: inherit
-
-  call_infra_prod:
-    name: Infra prod
-    uses: ./.github/workflows/infra.yml
-    needs: [call_docker_build]
-    if: github.ref == 'refs/heads/main' && success()
-    with:
-      env: prod
     secrets: inherit
 
   call_deploy_dev:
@@ -60,6 +42,15 @@ jobs:
       env: dev
     secrets: inherit
 
+  call_infra_stage:
+    name: Infra stage
+    uses: ./.github/workflows/infra.yml
+    needs: [call_deploy_dev]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: stage
+    secrets: inherit
+
   call_deploy_stage:
     name: Deploy stage
     uses: ./.github/workflows/deploy.yml
@@ -67,6 +58,15 @@ jobs:
     if: github.ref == 'refs/heads/main' && success()
     with:
       env: stage
+    secrets: inherit
+
+  call_infra_prod:
+    name: Infra prod
+    uses: ./.github/workflows/infra.yml
+    needs: [call_deploy_stage]
+    if: github.ref == 'refs/heads/main' && success()
+    with:
+      env: prod
     secrets: inherit
 
   call_deploy_prod:
