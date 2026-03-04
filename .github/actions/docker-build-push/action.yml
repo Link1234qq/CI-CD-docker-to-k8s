@@ -11,4 +11,4 @@ runs:
   steps:
     - name: Build Docker image and push to registry
       shell: bash
-      run: echo "Building docker image and pushing to registry"
+      run: echo "Building Docker image and pushing to registry"

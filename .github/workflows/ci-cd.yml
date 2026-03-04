@@ -1,4 +1,5 @@
-# Main CI/CD pipeline — uses reusable workflows and shared actions (best practice)
+# Full CI/CD pipeline: Docker app → infra → deploy to K8s per env
+
 name: CI CD
 
 on:
@@ -15,7 +16,7 @@ jobs:
     name: CI
     uses: ./.github/workflows/ci.yml
 
-  # --- CD: only on main — Docker build then infra + deploy per env ---
+  # --- CD: only on main — build image then sequential promotion with infra before each deploy ---
   call_docker_build:
     name: Docker build
     uses: ./.github/workflows/docker-build.yml
@@ -23,7 +24,6 @@ jobs:
     if: github.ref == 'refs/heads/main' && success()
     secrets: inherit
 
-  # --- CD: sequential promotion — dev → stage → prod (each env only after previous succeeded) ---
   call_infra_dev:
     name: Infra dev
     uses: ./.github/workflows/infra.yml

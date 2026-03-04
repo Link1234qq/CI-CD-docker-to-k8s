@@ -10,4 +10,4 @@ runs:
   steps:
     - name: Provision infra for ${{ inputs.env }}
       shell: bash
-      run: echo "Provisioning infra for ${{ inputs.env }}"
+      run: echo "Provisioning infrastructure for ${{ inputs.env }}"
