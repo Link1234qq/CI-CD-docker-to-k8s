@@ -3,7 +3,7 @@ name: Docker build and push
 description: Build image and push to registry
 inputs:
   image-name:
-    description: Image name (e.g. myapp)
+    description: Image name
     required: false
     default: myapp
 runs:

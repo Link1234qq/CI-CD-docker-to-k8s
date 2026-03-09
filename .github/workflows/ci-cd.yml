@@ -6,9 +6,9 @@ on:
   push:
     branches:
       - main
-      - develop
       - 'feature/*'
   pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   # --- CI: always run (build + test) ---
@@ -16,19 +16,19 @@ jobs:
     name: CI
     uses: ./.github/workflows/ci.yml
 
-  # --- CD: only on main — build image then sequential promotion with infra before each deploy ---
+  # --- CD: only on merge to develop (pull_request merged) — build image then sequential promotion with infra before each deploy ---
   call_docker_build:
     name: Docker build
     uses: ./.github/workflows/docker-build.yml
     needs: [call_ci]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     secrets: inherit
 
   call_infra_dev:
     name: Infra dev
     uses: ./.github/workflows/infra.yml
     needs: [call_docker_build]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     with:
       env: dev
     secrets: inherit
@@ -37,7 +37,7 @@ jobs:
     name: Deploy dev
     uses: ./.github/workflows/deploy.yml
     needs: [call_infra_dev]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     with:
       env: dev
     secrets: inherit
@@ -46,7 +46,7 @@ jobs:
     name: Infra stage
     uses: ./.github/workflows/infra.yml
     needs: [call_deploy_dev]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     with:
       env: stage
     secrets: inherit
@@ -55,7 +55,7 @@ jobs:
     name: Deploy stage
     uses: ./.github/workflows/deploy.yml
     needs: [call_infra_stage]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     with:
       env: stage
     secrets: inherit
@@ -64,7 +64,7 @@ jobs:
     name: Infra prod
     uses: ./.github/workflows/infra.yml
     needs: [call_deploy_stage]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     with:
       env: prod
     secrets: inherit
@@ -73,7 +73,7 @@ jobs:
     name: Deploy prod
     uses: ./.github/workflows/deploy.yml
     needs: [call_infra_prod]
-    if: github.ref == 'refs/heads/main' && success()
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && success()
     with:
       env: prod
     secrets: inherit
