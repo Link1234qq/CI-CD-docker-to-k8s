@@ -3,7 +3,7 @@ name: Docker build and push
 description: Build image and push to registry
 inputs:
   image-name:
-    description: Image name (e.g. myapp)
+    description: Image name
     required: false
     default: myapp
 runs:
@@ -11,4 +11,4 @@ runs:
   steps:
     - name: Build Docker image and push to registry
       shell: bash
-      run: echo "Building docker image and pushing to registry"
+      run: echo "Building Docker image and pushing to registry"

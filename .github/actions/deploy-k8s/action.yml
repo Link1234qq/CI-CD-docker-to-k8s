@@ -10,4 +10,4 @@ runs:
   steps:
     - name: Deploy to ${{ inputs.env }}
       shell: bash
-      run: echo "Deploying to Kubernetes ${{ inputs.env }}"
+      run: echo "Deploying to Kubernetes cluster (${{ inputs.env }})"
